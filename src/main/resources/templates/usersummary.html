@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        :root {
+            --primary: #10B981;
+            --primary-dark: #059669;
+            --background: #F9FAFB;
+            --card-bg: #FFFFFF;
+            --text: #111827;
+            --text-secondary: #6B7280;
+            --accent: #3B82F6;
+            --danger: #EF4444;
+            --success: #10B981;
+        }
+
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px;
+            background-color: var(--card-bg);
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .home-button:hover {
+            background-color: var(--primary);
+            color: var(--card-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-content p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            grid-column: span 8;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .transport-summary {
+            grid-column: span 4;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            background: var(--success);
+            color: white;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+        }
+
+        .stat-change.negative {
+            background: var(--danger);
+        }
+
+        .chart-container {
+            grid-column: 1 / -1;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .transport-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .transport-item:last-child {
+            border-bottom: none;
+        }
+
+        .transport-icon {
+            width: 48px;
+            height: 48px;
+            background: #F3F4F6;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        .transport-info h4 {
+            font-size: 1rem;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+
+        .transport-info p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid, .transport-summary {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        .loading {
+            position: relative;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+<a href="/home" class="home-button" aria-label="Go to home page">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+</a>
+
+<div class="dashboard">
+    <div class="header">
+        <div class="header-content">
+            <h1>Carbon Dashboard</h1>
+            <p>Tracking your environmental impact</p>
+        </div>
+        <div id="userInfo" class="user-info"></div>
+    </div>
+
+    <div class="main-grid">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Today's Emissions</h3>
+                <div class="stat-value" id="dailyEmissions">--</div>
+                <div class="stat-change" id="dailyChange">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <h3>Weekly Total</h3>
+                <div class="stat-value" id="weeklyEmissions">--</div>
+                <div class="stat-change" id="weeklyChange">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <h3>Monthly Average</h3>
+                <div class="stat-value" id="monthlyEmissions">--</div>
+                <div class="stat-change" id="monthlyChange">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Impact</h3>
+                <div class="stat-value" id="totalEmissions">--</div>
+                <div class="stat-change">Lifetime tracking</div>
+            </div>
+        </div>
+
+        <div class="transport-summary">
+            <h3>Transport Breakdown</h3>
+            <div class="transport-item">
+                <div class="transport-icon">🚶</div>
+                <div class="transport-info">
+                    <h4>Walking</h4>
+                    <p id="walkingDistance">-- km</p>
+                </div>
+            </div>
+            <div class="transport-item">
+                <div class="transport-icon">🚲</div>
+                <div class="transport-info">
+                    <h4>Biking</h4>
+                    <p id="bikingDistance">-- km</p>
+                </div>
+            </div>
+            <div class="transport-item">
+                <div class="transport-icon">🚗</div>
+                <div class="transport-info">
+                    <h4>Driving</h4>
+                    <p id="drivingDistance">-- km</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="emissionsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function fetchEmissionData() {
+        try {
+            // Get user ID from cookie
+            const userId = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('user_id='))
+                ?.split('=')[1];
+
+            if (!userId) {
+                throw new Error('User ID not found in cookies');
+            }
+
+            console.log('Fetching emissions for user ID:', userId);
+            const response = await fetch(`/api/getUserEmission/${userId}`);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Emission data received:', data);
+            updateDashboard(data);
+        } catch (error) {
+            console.error('Error fetching emission data:', error);
+            showErrorState();
+        }
+    }
+
+    function showErrorState() {
+        document.querySelectorAll('.stat-value').forEach(el => {
+            el.textContent = '--';
+        });
+        document.querySelectorAll('.stat-change').forEach(el => {
+            el.textContent = 'Data unavailable';
+            el.style.background = '#EF4444';
+        });
+    }
+
+    function formatEmission(value) {
+        return `${value.toFixed(1)} kg CO₂`;
+    }
+
+    function formatDistance(value) {
+        return `${value.toFixed(1)} km`;
+    }
+
+    function updateDashboard(data) {
+        // Update emission stats
+        document.getElementById('dailyEmissions').textContent = formatEmission(data.dailyEmissionCount);
+        document.getElementById('weeklyEmissions').textContent = formatEmission(data.weeklyEmissionCount);
+        document.getElementById('monthlyEmissions').textContent = formatEmission(data.monthlyEmissionCount);
+        document.getElementById('totalEmissions').textContent = formatEmission(data.totalEmissionCount);
+
+        // Update transport distances
+        document.getElementById('walkingDistance').textContent = formatDistance(data.dailyDistanceWalked);
+        document.getElementById('bikingDistance').textContent = formatDistance(data.dailyDistanceBiked);
+        document.getElementById('drivingDistance').textContent = formatDistance(data.dailyDistanceDriven);
+
+        // Calculate daily vs weekly average
+        const weeklyAverage = data.weeklyEmissionCount / 7;
+        const dailyChange = ((data.dailyEmissionCount - weeklyAverage) / weeklyAverage) * 100;
+        const dailyChangeEl = document.getElementById('dailyChange');
+        dailyChangeEl.textContent = `${Math.abs(dailyChange).toFixed(1)}% ${dailyChange > 0 ? 'above' : 'below'} avg`;
+        dailyChangeEl.className = `stat-change ${dailyChange > 0 ? 'negative' : ''}`;
+
+        updateChart(data);
+    }
+
+    let emissionsChart = null;  // Define chart variable in wider scope
+
+    function updateChart(data) {
+        const ctx = document.getElementById('emissionsChart').getContext('2d');
+
+        // Properly destroy existing chart if it exists
+        if (emissionsChart) {
+            emissionsChart.destroy();
+        }
+
+        emissionsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Daily', 'Weekly Avg', 'Monthly Avg'],
+                datasets: [{
+                    label: 'Carbon Emissions (kg CO₂)',
+                    data: [
+                        data.dailyEmissionCount,
+                        data.weeklyEmissionCount / 7,
+                        data.monthlyEmissionCount / 30
+                    ],
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                height: 300,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'CO₂ Emissions (kg)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Initialize
+    fetchEmissionData();
+
+    // Refresh every 5 minutes
+    setInterval(fetchEmissionData, 300000);
+</script>
+</body>
+</html>

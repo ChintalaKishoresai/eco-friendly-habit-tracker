@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack - Monitor Your Carbon Footprint</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="stylesheet" href="/css/landingpage.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="logo">EcoTrack</div>
+    <a href="/create" class="cta-button">Get Started</a>
+</nav>
+
+<section class="hero">
+    <div class="floating-elements" id="floatingElements"></div>
+    <h1>Track Your Carbon Footprint</h1>
+    <p>Join thousands of environmentally conscious individuals and businesses in measuring and reducing their carbon impact. Make a difference today.</p>
+    <a href="/home" class="cta-button">Start Tracking For Free</a>
+</section>
+
+<section class="features">
+    <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Real-time Monitoring</h3>
+        <p>Track your carbon emissions in real-time with our intuitive dashboard. Get instant insights into your environmental impact.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Smart Goals</h3>
+        <p>Set personalized reduction targets and receive actionable recommendations to achieve your sustainability goals.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Mobile First</h3>
+        <p>Access your environmental data anywhere, anytime. Our responsive platform works seamlessly across all devices.</p>
+    </div>
+</section>
+
+<!-- Chatbot HTML -->
+<div class="chat-widget">
+    <button class="chat-button" id="chatButton">
+        💬
+    </button>
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-header">
+            <h3>EcoTrack Assistant</h3>
+            <button class="chat-close" id="chatClose">×</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be added here dynamically -->
+        </div>
+    </div>
+</div>
+
+<script src="/js/landingpage.js"></script>
+</body>
+</html>
